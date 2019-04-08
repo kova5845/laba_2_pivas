@@ -8,11 +8,11 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="laba_2_pivas.jar" size="196944" download="eager" />
+    <jar href="laba_2_pivas.jar" size="189446" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="laba_2_pivas" >
     <param name="requiredFXVersion" value="8.0+"/>
   </applet-desc>
-  <jfx:javafx-desc  width="800" height="600" main-class="laba2.Main"  name="laba_2_pivas" />
+  <jfx:javafx-desc  width="800" height="600" main-class="laba2.View"  name="laba_2_pivas" />
   <update check="always"/>
 </jnlp>
