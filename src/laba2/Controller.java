@@ -6,74 +6,60 @@
 package laba2;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
+import java.util.ArrayList;
 
 /**
  *
  * @author alexey
  */
 public class Controller {
+    DataBasePersonal model;
 
-    View view;
-    Model model;
-
-    public Controller(View view) {
-        this.view = view;
-        this.model = new Model();
+    public Controller() {
+        this.model = new DataBasePersonal(this);
+    }
+    
+    public void addPerson(Personal per){
+        model.addPerson(per);
     }
 
-    public ObservableList<Personal> openFile(File file) {
-        try {
-            return model.SaxParser(file);
-        } catch (ParserConfigurationException ex) {
-            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SAXException ex) {
-            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public ArrayList<Personal> openFile(File file) {
+        model.sax(file);
+        return model.getData();
     }
 
-    public void saveFile(File file, ObservableList<Personal> data) {
-        try {
-            model.DomParser(file, data);
-        } catch (ParserConfigurationException ex) {
-            Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void saveFile(File file) {
+        model.dom(file);
+    }
+    
+    public ArrayList<Personal> getData(){
+        return model.getData();
+    }
+    
+    public ArrayList<Personal> setData(ArrayList<Personal> data){
+        model.setData(data);
+        return data;
     }
 
-    public ObservableList<Personal> searchDataFirst(ObservableList<Personal> data,
-            String name, String surname, String patronymic, String department) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
+    public ArrayList<Personal> searchDataFirst(String name, String surname, String patronymic, String department) {
+        ArrayList<Personal> buffer, data;
+        buffer = new ArrayList<>();
+        data = model.getData();
         for (Personal per : data) {
-            if ((name.equals(per.getName())
-                    || name.equals(""))
-                    && (surname.equals(per.getSurname())
-                    || surname.equals(""))
-                    && (patronymic.equals(per.getPatronymic())
-                    || patronymic.equals(""))
-                    && (department.equals(per.getDepartment())
-                    || department.equals(""))
-                    && !(name.equals("")
-                    && surname.equals("")
-                    && patronymic.equals("")
-                    && department.equals(""))) {
+            if (((name.equals(per.getName())
+                    || surname.equals(per.getSurname())
+                    || patronymic.equals(per.getPatronymic()))
+                    || department.equals(per.getDepartment()))) {
                 buffer.add(per);
             }
         }
         return buffer;
     }
 
-    public ObservableList<Personal> searchDataSecond(ObservableList<Personal> data,
-            String academicRank, String faculty) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
+    public ArrayList<Personal> searchDataSecond(String academicRank, String faculty) {
+        ArrayList<Personal> buffer, data;
+        buffer = new ArrayList<>();
+        data = model.getData();
         for (Personal per : data) {
             if (academicRank.equals(per.getAcademicRank())
                     && faculty.equals(per.getFaculty())) {
@@ -83,9 +69,10 @@ public class Controller {
         return buffer;
     }
 
-    public ObservableList<Personal> searchDataThird(ObservableList<Personal> data,
-            String heightExperience, String lowExperience) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
+    public ArrayList<Personal> searchDataThird(String heightExperience, String lowExperience) {
+        ArrayList<Personal> buffer, data;
+        buffer = new ArrayList<>();
+        data = model.getData();
         for (Personal per : data) {
             if ((Integer.parseInt(heightExperience)
                     >= per.getExperience())
@@ -97,53 +84,47 @@ public class Controller {
         return buffer;
     }
 
-    public ObservableList<Personal> deleteDataFirst(ObservableList<Personal> data,
-            String name, String surname, String patronymic, String department) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
-        for (Personal per : data) {
-            if (!((name.equals(per.getName())
-                    || name.equals(""))
-                    && (surname.equals(per.getSurname())
-                    || surname.equals(""))
-                    && (patronymic.equals(per.getPatronymic())
-                    || patronymic.equals(""))
-                    && (department.equals(per.getDepartment())
-                    || department.equals("")))
-                    && !(name.equals("")
-                    && surname.equals("")
-                    && patronymic.equals("")
-                    && department.equals(""))) {
-                buffer.add(per);
-            }
-        }
-        return buffer;
+    public ArrayList<Personal> deleteDataFirst(String name, String surname, String patronymic, String department) {
+        ArrayList<Personal> data = model.getData();
+        ArrayList<Personal> buffer = searchDataFirst(name, surname, patronymic, department);
+        data.removeAll(buffer);
+        return data;
     }
 
-    public ObservableList<Personal> deleteDataSecond(ObservableList<Personal> data,
-            String academicRank, String faculty) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
-        for (Personal per : data) {
-            if (!(academicRank.equals(per.getAcademicRank())
-                    && faculty.equals(per.getFaculty()))
-                    && !(academicRank.equals("") 
-                    && faculty.equals(""))) {
-                buffer.add(per);
-            }
-        }
-        return buffer;
+    public ArrayList<Personal> deleteDataSecond(String academicRank, String faculty) {
+        ArrayList<Personal> data = model.getData();
+        ArrayList<Personal> buffer = searchDataSecond(academicRank, faculty);
+        data.removeAll(buffer);
+        return data;
     }
 
-    public ObservableList<Personal> deleteDataThird(ObservableList<Personal> data,
-            String heightExperience, String lowExperience) {
-        ObservableList<Personal> buffer = FXCollections.observableArrayList();
-        for (Personal per : data) {
-            if (!((Integer.parseInt(heightExperience)
-                    >= per.getExperience())
-                    && (Integer.parseInt(lowExperience)
-                    <= per.getExperience()))) {
-                buffer.add(per);
-            }
-        }
-        return buffer;
+    public ArrayList<Personal> deleteDataThird(String heightExperience, String lowExperience) {
+        ArrayList<Personal> data = model.getData();
+        ArrayList<Personal> buffer = searchDataThird(heightExperience, lowExperience);
+        data.removeAll(buffer);
+        return data;
+    }
+
+    public ArrayList<Personal> dataClear() {
+        return model.dataClear();
     }
 }
+
+
+
+
+//ok //добавить количество записей всех
+//ok //постраничный компонент в поиске изменить кол-во записей
+//ok //поиск или в первой группе
+//ok //постраничный компонент
+//ok //парсеры в отдельный класс
+//ok //нет слоя Model, удалить data из view и разбить это класс на несколько классов
+//ok //переименовать классы
+//ok //удалить view из контроллера
+//ok //использовать FXCOlections только в слое View
+
+//Запускаем прогу добавляем 1 запись сохраняем смотрим структуру
+//Загружаем файл с большим кол-вом записей
+//Смотрим постраничный вывод
+//Тестируем поиск
+//Тестируем удаление

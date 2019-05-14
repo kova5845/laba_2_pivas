@@ -5,20 +5,20 @@
  */
 package laba2;
 
+import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
-import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.Pagination;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -29,7 +29,11 @@ import javafx.stage.Stage;
  * @author alexey
  */
 public class Dialog {
-
+    MenuBar menuBar;
+    Menu rows;
+    RadioMenuItem fiveRowsForPage;
+    RadioMenuItem tenRowsForPage;
+    RadioMenuItem twentyRowsForPage;
     Label nameLabel;
     Label surnameLabel;
     Label patronymicLabel;
@@ -56,12 +60,26 @@ public class Dialog {
     VBox vBox;
     Scene scene;
     Stage window;
-    TableView<Personal> table;
-    ObservableList<Personal> data = FXCollections.observableArrayList();
-    Pagination pagination;
-    int rowsPerPage = 5;
+    Table table;
+    Label kolAllNotes;
 
+    
     public Dialog() {
+        fiveRowsForPage = new RadioMenuItem("5");
+        fiveRowsForPage.setOnAction((ActionEvent event) -> {
+            table.setRowsPerPage(5);
+        });
+        tenRowsForPage = new RadioMenuItem("10");
+        tenRowsForPage.setOnAction((ActionEvent event) -> {
+            table.setRowsPerPage(10);
+        });
+        twentyRowsForPage = new RadioMenuItem("20");
+        twentyRowsForPage.setOnAction((ActionEvent event) -> {
+            table.setRowsPerPage(20);
+        });
+        rows = new Menu("rows");
+        rows.getItems().addAll(fiveRowsForPage, tenRowsForPage, twentyRowsForPage);
+        menuBar = new MenuBar(rows);
         nameLabel = new Label("имя");
         surnameLabel = new Label("фамилия");
         patronymicLabel = new Label("отчество");
@@ -95,33 +113,13 @@ public class Dialog {
         searchExperience.getChildren().addAll(experienceLabel,
                 lowExperienceLabel, lowExperienceField, heightExperienceLabel,
                 heightExperienceField, experienceButton);
-        table = new TableView<>();
-        table.setMinSize(711, 300);
-        TableColumn faculty = new TableColumn<>("факультет");
-        faculty.setCellValueFactory(new PropertyValueFactory<>("faculty"));
-        TableColumn department = new TableColumn<>("кафедра");
-        department.setCellValueFactory(new PropertyValueFactory<>("department"));
-        TableColumn name = new TableColumn("имя");
-        name.setCellValueFactory(new PropertyValueFactory<>("name"));
-        TableColumn surname = new TableColumn("фамилия");
-        surname.setCellValueFactory(new PropertyValueFactory<>("surname"));
-        TableColumn patronymic = new TableColumn("отчество");
-        patronymic.setCellValueFactory(new PropertyValueFactory<>("patronymic"));
-        TableColumn fio = new TableColumn("ФИО");
-        fio.getColumns().addAll(surname, name, patronymic);
-        TableColumn academicRank = new TableColumn("учёное звание");
-        academicRank.setCellValueFactory(new PropertyValueFactory<>("academicRank"));
-        TableColumn academicDegree = new TableColumn("учёная степень");
-        academicDegree.setCellValueFactory(new PropertyValueFactory<>("academicDegree"));
-        TableColumn experience = new TableColumn("стаж");
-        experience.setCellValueFactory(new PropertyValueFactory<>("experience"));
-        table.getColumns().addAll(faculty, department, fio, academicRank,
-                academicDegree, experience);
+        table = new Table();
+        kolAllNotes = new Label();
         vBox = new VBox();
+        vBox.getChildren().add(menuBar);
         vBox.getChildren().addAll(searchFIOorDepartment,
                 searchFacultyAndAcademicRank, searchExperience);
-        pagination = new Pagination((data.size() / rowsPerPage+ 1), 0);
-        vBox.getChildren().add(pagination);
+        vBox.getChildren().addAll(table.pagination, kolAllNotes);
         scene = new Scene(vBox, 1000, 500);
         window = new Stage();
         window.setScene(scene);
@@ -137,25 +135,16 @@ public class Dialog {
             academicRankList.add(per.getAcademicRank());
         }
         departmentBox.setItems(FXCollections.observableArrayList(departmentList));
+        departmentBox.setValue(departmentBox.getItems().get(0));
         facultyBox.setItems(FXCollections.observableArrayList(facultyList));
+        facultyBox.setValue(facultyBox.getItems().get(0));
         academicRankBox.setItems(FXCollections.observableArrayList(academicRankList));
-    }
-    
-     private Node createPage(int pageIndex) {
-        int fromIndex = pageIndex * rowsPerPage;
-        int toIndex = Math.min(fromIndex + rowsPerPage, data.size());
-        table.setItems(FXCollections.observableArrayList(data.subList(fromIndex, toIndex)));
-        return new VBox(table);
+        academicRankBox.setValue(academicRankBox.getItems().get(0));
     }
 
-    public void setPagin(ObservableList<Personal> data) {
-        this.data = data;
-        if (data.size() != 0) {
-            pagination.setPageCount((data.size() / rowsPerPage + 1));
-            pagination.setPageFactory(this::createPage);
-        } else {
-            pagination.setPageCount(1);
-        }
+    public void setPagin(ArrayList<Personal> data) {
+        table.setData(data);
+        kolAllNotes.setText("Количество записей: " + data.size());
     }
 
     public void showDialog(Stage primaryStage) {
@@ -164,5 +153,11 @@ public class Dialog {
         window.initModality(Modality.WINDOW_MODAL);
         window.initOwner(primaryStage);
         window.show();
+    }
+    
+    public void showAlert(int kol) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("Было удалено "  + Integer.toString(kol) + " записей");
+        alert.show();
     }
 }
